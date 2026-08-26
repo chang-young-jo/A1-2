@@ -179,7 +179,8 @@ def create_final_report(
     client,
     travel_date,
     recommendation,
-    restaurants
+    restaurants,
+    errors
 ):
     restaurant_text = ""
 
@@ -191,7 +192,14 @@ def create_final_report(
             )
     else:
         restaurant_text = "데이터 없음"
-
+    if errors:
+        error_text = json.dumps(
+            errors,
+            ensure_ascii=False,
+            indent=2
+        )
+    else:
+        error_text = "오류 없음"
     prompt = f"""
 아래 정보를 이용해서 국내 여행 추천 리포트를 작성해주세요.
 
@@ -216,10 +224,19 @@ def create_final_report(
 ## 행사/축제
 ## 맛집 추천
 ## 1일 일정 제안
+## 오류 요약(errors)
 
 1일 일정은 오전 / 오후 / 저녁으로 나누어 작성해주세요.
 
-맛집 정보가 없으면 "데이터 없음"이라고 표시해주세요.
+맛집 정보가 없으면
+"데이터 없음"이라고 표시해주세요.
+
+오류 정보:
+{error_text}
+
+오류 정보가 "오류 없음"이면
+오류 요약(errors) 항목에 "오류 없음"이라고 작성해주세요.
+오류가 있으면 해당 내용을 간단히 요약해주세요.
 """
 
     response = client.responses.create(
@@ -387,7 +404,8 @@ try:
         client,
         travel_date,
         recommendation,
-        restaurants
+        restaurants,
+        errors
     )
 
     markdown_file = save_markdown_report(
